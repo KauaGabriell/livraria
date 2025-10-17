@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import bcrypt, { genSaltSync } from 'bcrypt';
+import userValidatorSchema from '../utils/userValidator.js';
 
 //Criando Schema do Model
 const userSchema = new mongoose.Schema({
@@ -21,9 +22,10 @@ class User {
 
   //Método para cadastrar/criar um usuário.
   async register() {
-    await this.userExist();  //Verifica se o usuário já existe.
+    this.valida();
+    await this.userExist(); //Verifica se o usuário já existe.
 
-    if(this.errors.length > 0) return //Verifica se tem alguma erro na nossa criação, se tiver para a aplicação.
+    if (this.errors.length > 0) return; //Verifica se tem alguma erro na nossa criação, se tiver para a aplicação.
 
     //Adicionando um hash na senha com bcrypt
     const salt = genSaltSync();
@@ -32,15 +34,25 @@ class User {
     this.user = await userModel.create(this.body); //Cria o usuário.
   }
 
-  //Método para verificar se o usuário existe.
+  //Verificação de duplicidade de usuário.
   async userExist() {
-    const user = await userModel.findOne({email: this.body.email});
-    if(user){
-        this.errors.push("Usuário Já Cadastrado");
+    const user = await userModel.findOne({ email: this.body.email });
+    if (user) {
+      this.errors.push('Usuário Já Cadastrado');
     }
   }
 
-  
+  //Validação dos dados de entrada.
+  valida() {
+    const validationResult = userValidatorSchema.validate(this.body); //Usando Joi para validar
+
+    if (validationResult.error) {
+      for (let i = 0; i < validationResult.error.details.length; i++) {
+        this.errors.push(validationResult.error.details[i].message); //Adicionando mensagem de erro da validação para o array de erros.
+      }
+      return;
+    }
+  }
 }
 
 export default User;
