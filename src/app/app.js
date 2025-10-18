@@ -6,12 +6,19 @@ import morgan from 'morgan';
 import dotenv from 'dotenv';
 import errorHandler from '../middlewares/errorHandler.js';
 import logger from '../utils/logger.js';
-import routes from '../routes/index.js';
+import routes from '../routes/home.js';
 import userRoutes from '../routes/userRoutes.js';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
 dotenv.config();
 
 const app = express();
+
+//Paths
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Middleware
 app.use(express.json());
@@ -21,8 +28,12 @@ app.use(helmet());
 app.use(compression());
 app.use(morgan('dev', { stream: logger.stream }));
 
+/** Definindo a engine do EJS */
+app.set('views', path.resolve(__dirname, '..', 'views'));
+app.set('view engine', 'ejs');
+
 // Routes
-app.use('/api/v1', routes);
+app.use('/', routes);
 app.use('/users', userRoutes);
 
 // Error Handling

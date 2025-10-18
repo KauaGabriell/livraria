@@ -1,5 +1,9 @@
 import User from '../models/userModel.js';
 
+export function homeRegister(req, res){
+  res.render('register');
+}
+
 export async function userCreate(req, res) {
   try {
     const user = new User(req.body);
