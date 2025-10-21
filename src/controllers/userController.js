@@ -8,6 +8,8 @@ export function homeLogin(req, res){
   res.render('login');
 }
 
+
+//User Register
 export async function userCreate(req, res) {
   try {
     const user = new User(req.body);
@@ -18,5 +20,18 @@ export async function userCreate(req, res) {
   } catch (error) 
   {
    return res.status(501).json({message: 'Não foi possível cadastrar seu usuário.'})
+  }
+}
+
+//User Login.
+export async function userLogin(req, res){
+  try {
+    const user = new User(req.body);
+    await user.login();
+    console.log(user.errors);
+    
+    res.status(200).json(user.user);
+  } catch (error) {
+    res.status(501).json({message: "Não foi possível realizar o login"});
   }
 }

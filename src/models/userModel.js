@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 import bcrypt, { genSaltSync } from 'bcrypt';
-import userValidatorSchema from '../utils/userValidator.js';
+import {userValidatorSchemaRegister, userValidatorSchemaLogin} from '../utils/userValidator.js';
 
 //Criando Schema do Model
 const userSchema = new mongoose.Schema({
@@ -22,7 +22,7 @@ class User {
 
   //Método para cadastrar/criar um usuário.
   async register() {
-    this.valida();
+    this.registerValidation();
     await this.userExist(); //Verifica se o usuário já existe.
 
     if (this.errors.length > 0) return; //Verifica se tem alguma erro na nossa criação, se tiver para a aplicação.
@@ -43,8 +43,8 @@ class User {
   }
 
   //Validação dos dados de entrada.
-  valida() {
-    const validationResult = userValidatorSchema.validate(this.body); //Usando Joi para validar
+  registerValidation() {
+    const validationResult = userValidatorSchemaRegister.validate(this.body); //Usando Joi para validar
 
     if (validationResult.error) {
       for (let i = 0; i < validationResult.error.details.length; i++) {
@@ -52,6 +52,39 @@ class User {
       }
       return;
     }
+  }
+
+  loginValidation(){
+    const validationResult = userValidatorSchemaLogin.validate(this.body);
+
+    if(validationResult.error){
+      for(let i = 0; i < validationResult.error.details.length; i++){
+        this.errors.push(validationResult.error.details[i].message);
+      }
+      return;
+    }
+  }
+
+  async login() {
+    this.loginValidation(); //Valida Campos enviados no login;
+    
+    if (this.errors.length > 0) return; //Retorna se tiver algum erro já na validação dos campos
+    
+    const user = await userModel.findOne({ email: this.body.email }).select('+password');
+    
+
+    if (user) {
+      this.user = user;
+      const passwordCompare = await bcrypt.compare(this.body.password, this.user.password);
+      if (!passwordCompare) {
+        this.errors.push('Senha Incorreta! Verifique as credenciais');
+      }
+    } else {
+      this.errors.push(
+        'Usuário não encontrado, verifique as credenciais ou faça seu registro',
+      );
+    }
+    
   }
 }
 
