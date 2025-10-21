@@ -4,6 +4,10 @@ export function homeRegister(req, res){
   res.render('register');
 }
 
+export function homeLogin(req, res){
+  res.render('login');
+}
+
 export async function userCreate(req, res) {
   try {
     const user = new User(req.body);
