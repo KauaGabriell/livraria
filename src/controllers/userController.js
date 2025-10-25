@@ -30,6 +30,13 @@ export async function userLogin(req, res){
     await user.login();
     console.log(user.errors);
     
+    if(!user.errors.length > 0){
+      req.session.user = user.user;
+      res.redirect('/');
+      return;
+    }
+    
+    
     res.status(200).json(user.user);
   } catch (error) {
     res.status(501).json({message: "Não foi possível realizar o login"});
