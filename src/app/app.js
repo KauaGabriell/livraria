@@ -10,10 +10,27 @@ import routes from '../routes/home.js';
 import userRoutes from '../routes/userRoutes.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import session from 'express-session'; 
+import MongoStore from 'connect-mongo';
 
 dotenv.config();
 
 const app = express();
+
+// Session Configuration
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET, // Uma chave secreta para assinar a sessão
+    resave: false,
+    saveUninitialized: false,
+    store: MongoStore.create({ mongoUrl: process.env.MONGO_URI }),
+    cookie: {
+      maxAge: 1000 * 60 * 60 * 24 * 7, // 7 dias
+      httpOnly: true
+    }
+  })
+);
+
 
 //Paths
 
